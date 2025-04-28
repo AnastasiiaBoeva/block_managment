@@ -1,0 +1,312 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Управление блокировками подозрительных платежей клиентов.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://virtserver.swaggerhub.com/boe-362/Block_payments/1.0.0",
+      "description": "Основной API сервер"
+    }
+  ],
+  "paths": {
+    "/clients/{client_id}/blocks": {
+      "post": {
+        "summary": "Блокирует платежи клиента",
+        "description": "Блокирует платежи для конкретного клиента.",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "description": "Уникальный идентификатор клиента.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/lock_client_id_body"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Платежи клиента успешно заблокированы."
+          },
+          "400": {
+            "description": "Некорректные входные данные."
+          },
+          "404": {
+            "description": "Клиент не найден."
+          },
+          "500": {
+            "description": "Ошибка на сервере."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Разблокировать платежи клиента",
+        "description": "Снимает блокировку платежей для конкретного клиента.",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "description": "Уникальный идентификатор клиента.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Платежи клиента успешно разблокированы."
+          },
+          "404": {
+            "description": "Клиент не найден."
+          },
+          "500": {
+            "description": "Ошибка на сервере."
+          }
+        }
+      }
+    },
+    "/api/clients/lock/{client_id}/current": {
+      "put": {
+        "summary": "Обновить активную блокировку клиента",
+        "description": "Позволяет обновить причину или тип активной блокировки клиента.",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "description": "Уникальный идентификатор клиента.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/client_id_current_body"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Текущая блокировка успешно обновлена."
+          },
+          "400": {
+            "description": "Некорректные входные данные."
+          },
+          "404": {
+            "description": "Активная блокировка клиента не найдена."
+          },
+          "500": {
+            "description": "Ошибка на сервере."
+          }
+        }
+      }
+    },
+    "/api/clients/lock/status/{client_id}": {
+      "get": {
+        "summary": "Проверить статус блокировки клиента",
+        "description": "Возвращает информацию о текущей блокировке клиента, если она есть.",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "description": "Уникальный идентификатор клиента.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ. Возвращает информацию о блокировке клиента, включая статус, причину и тип блокировки.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inline_response_200"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Клиент не найден или отсутствуют данные о блокировке."
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера."
+          }
+        }
+      }
+    },
+    "/api/clients/blocked": {
+      "get": {
+        "summary": "Вывести список всех блокировок",
+        "description": "Выводит список всех активных блокировок.",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "description": "Фильтр по уникальному идентификатору клиента.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список активных блокировок.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/inline_response_200_1"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Ошибка на сервере."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "lock_client_id_body": {
+        "required": [
+          "block_type",
+          "reason",
+          "start_date_lock"
+        ],
+        "type": "object",
+        "properties": {
+          "reason": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "Причина блокировки."
+          },
+          "block_type": {
+            "type": "string",
+            "description": "Тип блокировки.",
+            "enum": [
+              "temporary",
+              "permanent",
+              "partial",
+              "investigation",
+              "data verification"
+            ]
+          },
+          "start_date_lock": {
+            "type": "string",
+            "description": "Дата и время создания блокировки.",
+            "format": "date-time"
+          },
+          "end_date_lock": {
+            "type": "string",
+            "description": "Окончание блокировки (только для временных блокировок).",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "client_id_current_body": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "maxLength": 255,
+            "type": "string",
+            "description": "Обновленная причина блокировки."
+          },
+          "block_type": {
+            "type": "string",
+            "description": "Обновленный тип блокировки.",
+            "enum": [
+              "temporary",
+              "permanent",
+              "partial",
+              "investigation",
+              "data verification"
+            ]
+          }
+        }
+      },
+      "inline_response_200": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "description": "Уникальный идентификатор клиента."
+          },
+          "is_blocked": {
+            "type": "boolean",
+            "description": "Флаг, указывающий, заблокирован ли клиент."
+          },
+          "block_type": {
+            "type": "string",
+            "description": "Тип блокировки.",
+            "enum": [
+              "temporary",
+              "permanent",
+              "partial",
+              "investigation",
+              "data verification"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "description": "Причина блокировки."
+          },
+          "blocked_until": {
+            "type": "string",
+            "description": "Дата и время окончания блокировки (если временная).",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "inline_response_200_1": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "description": "Уникальный идентификатор клиента."
+          },
+          "block_type": {
+            "type": "string",
+            "description": "Тип блокировки."
+          }
+        }
+      }
+    }
+  }
+}
